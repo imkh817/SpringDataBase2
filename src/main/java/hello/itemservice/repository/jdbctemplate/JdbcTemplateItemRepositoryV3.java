@@ -37,14 +37,13 @@ public class JdbcTemplateItemRepositoryV3 implements ItemRepository {
     public JdbcTemplateItemRepositoryV3(DataSource dataSource) {
         this.template = new NamedParameterJdbcTemplate(dataSource);
         this.jdbcInsert = new SimpleJdbcInsert(dataSource)
-                .withTableName("item")
+                .withTableName("ITEM")
                 .usingGeneratedKeyColumns("id");
                 //.usingColumns("item_name","price","quantity") 생략 가능
     }
 
     @Override
     public Item save(Item item) {
-
 
         SqlParameterSource param = new BeanPropertySqlParameterSource(item);
         Number key = jdbcInsert.executeAndReturnKey(param);
@@ -74,7 +73,7 @@ public class JdbcTemplateItemRepositoryV3 implements ItemRepository {
 
         String sql = "select id, item_name, price, quantity from item where id = :id";
         try{
-            Map<String, Long> param = Map.of("id", id);
+            Map<String, Object> param = Map.of("id", id);
             Item item = template.queryForObject(sql,param,itemRowMapper());
             return Optional.of(item);
         }catch (EmptyResultDataAccessException e){
@@ -109,7 +108,7 @@ public class JdbcTemplateItemRepositoryV3 implements ItemRepository {
             if(andFlag){
                 sql += " and";
             }
-            sql += " price <= :price";
+            sql += " price <= :maxPrice";
         }
         log.info("sql = {}",sql);
         return template.query(sql,param,itemRowMapper());
